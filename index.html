@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4efe6">
+  <title>Danh sách link bài viết</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=DM+Serif+Display&display=swap");
+
+    :root {
+      --ink: #1d2925;
+      --muted: #68736e;
+      --paper: #fffdf8;
+      --line: #ded8cc;
+      --accent: #d65f36;
+      --accent-dark: #a83d1d;
+      --green: #244f43;
+      --success: #16734f;
+      --shadow: 0 18px 50px rgba(48, 44, 34, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      font-family: "Be Vietnam Pro", sans-serif;
+      background:
+        radial-gradient(circle at 8% 8%, rgba(214, 95, 54, 0.18), transparent 28rem),
+        radial-gradient(circle at 92% 90%, rgba(36, 79, 67, 0.18), transparent 30rem),
+        #f4efe6;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      opacity: 0.35;
+      background-image: linear-gradient(rgba(29, 41, 37, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(29, 41, 37, 0.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    .app {
+      width: min(1040px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 56px 0 72px;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--accent-dark);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 640px;
+      margin: 0;
+      font-family: "DM Serif Display", Georgia, serif;
+      font-size: clamp(38px, 6vw, 68px);
+      font-weight: 400;
+      line-height: 0.98;
+      letter-spacing: -0.025em;
+    }
+
+    .date-card {
+      flex: 0 0 auto;
+      padding: 13px 17px;
+      color: #fffaf0;
+      border-radius: 16px;
+      background: var(--green);
+      box-shadow: 0 10px 24px rgba(36, 79, 67, 0.2);
+    }
+
+    .date-card span {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      opacity: 0.72;
+      text-transform: uppercase;
+    }
+
+    .date-card input {
+      min-height: 34px;
+      padding: 5px 9px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      border: 0;
+      border-radius: 9px;
+      background: #fffaf0;
+      cursor: pointer;
+      color-scheme: light;
+    }
+
+    main {
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 28px;
+      background: rgba(255, 253, 248, 0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(238, 232, 219, 0.6);
+    }
+
+    .tab {
+      min-height: 54px;
+      padding: 12px 20px;
+      color: var(--muted);
+      font: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      border: 0;
+      border-radius: 16px;
+      background: transparent;
+      cursor: pointer;
+      transition: color 180ms ease, background 180ms ease, transform 180ms ease;
+    }
+
+    .tab:hover {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.65);
+    }
+
+    .tab:active {
+      transform: scale(0.985);
+    }
+
+    .tab.active {
+      color: #fff;
+      background: var(--green);
+      box-shadow: 0 8px 18px rgba(36, 79, 67, 0.2);
+    }
+
+    .content {
+      padding: 26px;
+    }
+
+    .list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .list-header h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .count {
+      padding: 7px 11px;
+      color: var(--accent-dark);
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 999px;
+      background: #fbe4d9;
+    }
+
+    .link-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .link-item {
+      display: grid;
+      grid-template-columns: minmax(150px, 190px) minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 14px 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--paper);
+      animation: reveal 420ms both;
+    }
+
+    @keyframes reveal {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+    }
+
+    .title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .url {
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      text-decoration: none;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .url:hover {
+      color: var(--accent-dark);
+      text-decoration: underline;
+    }
+
+    .copy-button {
+      min-width: 82px;
+      padding: 9px 13px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid #cdc4b6;
+      border-radius: 10px;
+      background: #f6f0e5;
+      cursor: pointer;
+      transition: transform 150ms ease, color 150ms ease, background 150ms ease;
+    }
+
+    .copy-button:hover {
+      color: #fff;
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+
+    .copy-button:active {
+      transform: scale(0.96);
+    }
+
+    .copy-button.copied {
+      color: #fff;
+      border-color: var(--success);
+      background: var(--success);
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 10;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 12px;
+      background: var(--ink);
+      box-shadow: 0 12px 30px rgba(29, 41, 37, 0.25);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        width: min(100% - 20px, 1040px);
+        padding: 28px 0 40px;
+      }
+
+      header {
+        align-items: start;
+        flex-direction: column;
+        margin-bottom: 22px;
+      }
+
+      .date-card {
+        width: 100%;
+      }
+
+      .date-card span {
+        margin-bottom: 5px;
+      }
+
+      .date-card input {
+        width: 100%;
+      }
+
+      main {
+        border-radius: 22px;
+      }
+
+      .content {
+        padding: 18px 14px;
+      }
+
+      .link-item {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 6px 12px;
+        padding: 13px;
+      }
+
+      .url {
+        grid-column: 1;
+        grid-row: 2;
+      }
+
+      .copy-button {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <p class="eyebrow">Link Manager</p>
+        <h1>Danh sách link bài viết</h1>
+      </div>
+      <div class="date-card">
+        <label for="datePicker">
+          <span>Chọn ngày tạo link</span>
+        </label>
+        <input id="datePicker" type="date" aria-label="Chọn ngày tạo link">
+      </div>
+    </header>
+
+    <main>
+      <div class="tabs" role="tablist" aria-label="Chọn tài khoản">
+        <button class="tab active" type="button" role="tab" aria-selected="true" data-nick="1">Nick 1</button>
+        <button class="tab" type="button" role="tab" aria-selected="false" data-nick="2">Nick 2</button>
+      </div>
+
+      <section class="content">
+        <div class="list-header">
+          <h2 id="listTitle">Link của Nick 1</h2>
+          <span class="count">15 links</span>
+        </div>
+        <div class="link-list" id="linkList" aria-live="polite"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status">Đã sao chép link</div>
+
+  <script>
+    const BASE_URL = "https://heartfeltfamilystory.danhngon.pro/blog";
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, "0");
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const year = today.getFullYear();
+
+    const linkList = document.getElementById("linkList");
+    const listTitle = document.getElementById("listTitle");
+    const toast = document.getElementById("toast");
+    const datePicker = document.getElementById("datePicker");
+    const tabs = document.querySelectorAll(".tab");
+    let selectedNick = 1;
+    let toastTimer;
+
+    datePicker.value = `${year}-${month}-${day}`;
+
+    function getDateForUrl() {
+      const [selectedYear, selectedMonth, selectedDay] = datePicker.value.split("-");
+      return `${selectedDay}_${selectedMonth}_${selectedYear}`;
+    }
+
+    function createLinks(nick) {
+      const start = nick === 1 ? 1 : 6;
+      const links = [];
+
+      for (let titleNumber = start; titleNumber < start + 5; titleNumber += 1) {
+        for (let variant = 1; variant <= 3; variant += 1) {
+          links.push({
+            title: `Life Hidden Truth ${titleNumber}`,
+            url: `${BASE_URL}/life_hidden_truth_${titleNumber}_${getDateForUrl()}_${variant}`
+          });
+        }
+      }
+
+      return links;
+    }
+
+    function renderLinks(nick) {
+      const links = createLinks(nick);
+      listTitle.textContent = `Link của Nick ${nick}`;
+      linkList.replaceChildren();
+
+      links.forEach((link, index) => {
+        const item = document.createElement("article");
+        item.className = "link-item";
+        item.style.animationDelay = `${index * 22}ms`;
+
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = link.title;
+
+        const anchor = document.createElement("a");
+        anchor.className = "url";
+        anchor.href = link.url;
+        anchor.target = "_blank";
+        anchor.rel = "noopener noreferrer";
+        anchor.title = link.url;
+        anchor.textContent = link.url;
+
+        const button = document.createElement("button");
+        button.className = "copy-button";
+        button.type = "button";
+        button.textContent = "Copy";
+        button.setAttribute("aria-label", `Sao chép ${link.title}`);
+        button.addEventListener("click", () => copyLink(link.url, button));
+
+        item.append(title, anchor, button);
+        linkList.appendChild(item);
+      });
+    }
+
+    async function copyLink(url, button) {
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        const input = document.createElement("textarea");
+        input.value = url;
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        input.remove();
+      }
+
+      button.textContent = "Đã copy";
+      button.classList.add("copied");
+      window.setTimeout(() => {
+        button.textContent = "Copy";
+        button.classList.remove("copied");
+      }, 1400);
+
+      toast.classList.add("show");
+      window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => toast.classList.remove("show"), 1600);
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        selectedNick = Number(tab.dataset.nick);
+        tabs.forEach((item) => {
+          const isActive = item === tab;
+          item.classList.toggle("active", isActive);
+          item.setAttribute("aria-selected", String(isActive));
+        });
+        renderLinks(selectedNick);
+      });
+    });
+
+    datePicker.addEventListener("change", () => {
+      if (datePicker.value) {
+        renderLinks(selectedNick);
+      }
+    });
+
+    renderLinks(1);
+  </script>
+</body>
+</html>
