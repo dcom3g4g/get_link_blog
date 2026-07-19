@@ -133,6 +133,9 @@
     }
 
     .date-card {
+      display: flex;
+      align-items: end;
+      gap: 10px;
       flex: 0 0 auto;
       padding: 13px 17px;
       color: #fffaf0;
@@ -163,6 +166,14 @@
       background: #fffaf0;
       cursor: pointer;
       color-scheme: light;
+    }
+
+    .date-field {
+      min-width: 0;
+    }
+
+    .date-field:last-child input {
+      width: 88px;
     }
 
     main {
@@ -352,6 +363,8 @@
       }
 
       .date-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 110px;
         width: 100%;
       }
 
@@ -360,6 +373,10 @@
       }
 
       .date-card input {
+        width: 100%;
+      }
+
+      .date-field:last-child input {
         width: 100%;
       }
 
@@ -404,10 +421,18 @@
         <h1>Danh sách link bài viết</h1>
       </div>
       <div class="date-card">
-        <label for="datePicker">
-          <span>Chọn ngày tạo link</span>
-        </label>
-        <input id="datePicker" type="date" aria-label="Chọn ngày tạo link">
+        <div class="date-field">
+          <label for="datePicker">
+            <span>Chọn ngày tạo link</span>
+          </label>
+          <input id="datePicker" type="date" aria-label="Chọn ngày tạo link">
+        </div>
+        <div class="date-field">
+          <label for="postCountPicker">
+            <span>Số bài mỗi đề</span>
+          </label>
+          <input id="postCountPicker" type="number" min="1" max="20" value="3" inputmode="numeric" aria-label="Số bài mỗi đề">
+        </div>
       </div>
     </header>
 
@@ -420,7 +445,7 @@
       <section class="content">
         <div class="list-header">
           <h2 id="listTitle">Link của Nick 1</h2>
-          <span class="count">15 links</span>
+          <span class="count" id="linkCount">15 links</span>
         </div>
         <div class="link-list" id="linkList" aria-live="polite"></div>
       </section>
@@ -445,6 +470,8 @@
     const listTitle = document.getElementById("listTitle");
     const toast = document.getElementById("toast");
     const datePicker = document.getElementById("datePicker");
+    const postCountPicker = document.getElementById("postCountPicker");
+    const linkCount = document.getElementById("linkCount");
     const tabs = document.querySelectorAll(".tab");
     const quickCopyButtons = document.querySelectorAll(".quick-copy-button");
     let selectedNick = 1;
@@ -459,10 +486,11 @@
 
     function createLinks(nick) {
       const start = nick === 1 ? 1 : 6;
+      const postCount = Math.max(1, Math.min(20, Number(postCountPicker.value) || 3));
       const links = [];
 
       for (let titleNumber = start; titleNumber < start + 5; titleNumber += 1) {
-        for (let variant = 1; variant <= 3; variant += 1) {
+        for (let variant = 1; variant <= postCount; variant += 1) {
           links.push({
             title: `Life Hidden Truth ${titleNumber}`,
             url: `${BASE_URL}/life-hidden-truth-${titleNumber}-${getDateForUrl()}-${variant}`,
@@ -477,6 +505,7 @@
     function renderLinks(nick) {
       const links = createLinks(nick);
       listTitle.textContent = `Link của Nick ${nick}`;
+      linkCount.textContent = `${links.length} links`;
       linkList.replaceChildren();
 
       links.forEach((link, index) => {
@@ -562,6 +591,12 @@
       if (datePicker.value) {
         renderLinks(selectedNick);
       }
+    });
+
+    postCountPicker.addEventListener("change", () => {
+      const postCount = Math.max(1, Math.min(20, Number(postCountPicker.value) || 3));
+      postCountPicker.value = String(postCount);
+      renderLinks(selectedNick);
     });
 
     renderLinks(1);
