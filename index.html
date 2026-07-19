@@ -52,6 +52,59 @@
       padding: 56px 0 72px;
     }
 
+    .quick-copy {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .quick-copy-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 54px;
+      padding: 13px 16px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: left;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 15px;
+      background: rgba(255, 253, 248, 0.88);
+      box-shadow: 0 8px 24px rgba(48, 44, 34, 0.08);
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+    }
+
+    .quick-copy-button::after {
+      flex: 0 0 auto;
+      content: "Copy";
+      padding: 5px 9px;
+      color: var(--accent-dark);
+      font-size: 11px;
+      border-radius: 8px;
+      background: #fbe4d9;
+    }
+
+    .quick-copy-button:hover {
+      border-color: rgba(214, 95, 54, 0.45);
+      background: #fffdf8;
+      transform: translateY(-1px);
+    }
+
+    .quick-copy-button:active {
+      transform: scale(0.99);
+    }
+
+    .quick-copy-button.copied::after {
+      color: #fff;
+      content: "Copied";
+      background: var(--success);
+    }
+
     header {
       display: flex;
       align-items: end;
@@ -288,6 +341,10 @@
         padding: 28px 0 40px;
       }
 
+      .quick-copy {
+        margin-bottom: 20px;
+      }
+
       header {
         align-items: start;
         flex-direction: column;
@@ -334,6 +391,13 @@
 </head>
 <body>
   <div class="app">
+    <section class="quick-copy" aria-label="Quick copy text">
+      <button class="quick-copy-button" type="button" data-copy-text="Full story 👇">Full story 👇</button>
+      <button class="quick-copy-button" type="button" data-copy-text="What happened next 👇">What happened next 👇</button>
+      <button class="quick-copy-button" type="button" data-copy-text="Keep reading 👇">Keep reading 👇</button>
+      <button class="quick-copy-button" type="button" data-copy-text="📌 Check the pinned comment for the full story! 😉👇">📌 Check the pinned comment for the full story! 😉👇</button>
+    </section>
+
     <header>
       <div>
         <p class="eyebrow">Link Manager</p>
@@ -367,6 +431,11 @@
 
   <script>
     const BASE_URL = "https://heartfeltfamilystory.danhngon.pro/blog";
+    const LINK_PREFIXES = [
+      "Full story 👇",
+      "What happened next 👇",
+      "Keep reading 👇"
+    ];
     const today = new Date();
     const day = String(today.getDate()).padStart(2, "0");
     const month = String(today.getMonth() + 1).padStart(2, "0");
@@ -377,6 +446,7 @@
     const toast = document.getElementById("toast");
     const datePicker = document.getElementById("datePicker");
     const tabs = document.querySelectorAll(".tab");
+    const quickCopyButtons = document.querySelectorAll(".quick-copy-button");
     let selectedNick = 1;
     let toastTimer;
 
@@ -384,7 +454,7 @@
 
     function getDateForUrl() {
       const [selectedYear, selectedMonth, selectedDay] = datePicker.value.split("-");
-      return `${selectedDay}_${selectedMonth}_${selectedYear}`;
+      return `${selectedDay}-${selectedMonth}-${selectedYear}`;
     }
 
     function createLinks(nick) {
@@ -395,7 +465,8 @@
         for (let variant = 1; variant <= 3; variant += 1) {
           links.push({
             title: `Life Hidden Truth ${titleNumber}`,
-            url: `${BASE_URL}/life_hidden_truth_${titleNumber}_${getDateForUrl()}_${variant}`
+            url: `${BASE_URL}/life-hidden-truth-${titleNumber}-${getDateForUrl()}-${variant}`,
+            prefix: LINK_PREFIXES[Math.floor(Math.random() * LINK_PREFIXES.length)]
           });
         }
       }
@@ -423,14 +494,14 @@
         anchor.target = "_blank";
         anchor.rel = "noopener noreferrer";
         anchor.title = link.url;
-        anchor.textContent = link.url;
+        anchor.textContent = `${link.prefix} ${link.url}`;
 
         const button = document.createElement("button");
         button.className = "copy-button";
         button.type = "button";
         button.textContent = "Copy";
         button.setAttribute("aria-label", `Sao chép ${link.title}`);
-        button.addEventListener("click", () => copyLink(link.url, button));
+        button.addEventListener("click", () => copyLink(`${link.prefix}\n${link.url}`, button));
 
         item.append(title, anchor, button);
         linkList.appendChild(item);
@@ -438,6 +509,9 @@
     }
 
     async function copyLink(url, button) {
+      const originalText = button.dataset.originalText || button.textContent;
+      button.dataset.originalText = originalText;
+
       try {
         await navigator.clipboard.writeText(url);
       } catch {
@@ -451,13 +525,18 @@
         input.remove();
       }
 
-      button.textContent = "Đã copy";
+      if (!button.classList.contains("quick-copy-button")) {
+        button.textContent = "Đã copy";
+      }
       button.classList.add("copied");
       window.setTimeout(() => {
-        button.textContent = "Copy";
+        button.textContent = originalText;
         button.classList.remove("copied");
       }, 1400);
 
+      toast.textContent = button.classList.contains("quick-copy-button")
+        ? "Đã sao chép nội dung"
+        : "Đã sao chép link";
       toast.classList.add("show");
       window.clearTimeout(toastTimer);
       toastTimer = window.setTimeout(() => toast.classList.remove("show"), 1600);
@@ -473,6 +552,10 @@
         });
         renderLinks(selectedNick);
       });
+    });
+
+    quickCopyButtons.forEach((button) => {
+      button.addEventListener("click", () => copyLink(button.dataset.copyText, button));
     });
 
     datePicker.addEventListener("change", () => {
