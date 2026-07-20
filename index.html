@@ -172,8 +172,30 @@
       min-width: 0;
     }
 
-    .date-field:last-child input {
+    .date-field input,
+    .date-field select {
+      width: 100%;
+    }
+
+    .date-field select {
+      min-height: 34px;
+      padding: 5px 28px 5px 9px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      border: 0;
+      border-radius: 9px;
+      background: #fffaf0;
+      cursor: pointer;
+    }
+
+    .date-field:nth-child(2) input {
       width: 88px;
+    }
+
+    .date-field:last-child select {
+      width: 120px;
     }
 
     main {
@@ -364,7 +386,7 @@
 
       .date-card {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 110px;
+        grid-template-columns: minmax(0, 1fr) 90px 120px;
         width: 100%;
       }
 
@@ -376,7 +398,8 @@
         width: 100%;
       }
 
-      .date-field:last-child input {
+      .date-field:nth-child(2) input,
+      .date-field:last-child select {
         width: 100%;
       }
 
@@ -433,6 +456,14 @@
           </label>
           <input id="postCountPicker" type="number" min="1" max="20" value="3" inputmode="numeric" aria-label="Số bài mỗi đề">
         </div>
+        <div class="date-field">
+          <label for="idxFilter">
+            <span>Lọc theo idx</span>
+          </label>
+          <select id="idxFilter" aria-label="Lọc link theo idx phía sau">
+            <option value="all">Tất cả idx</option>
+          </select>
+        </div>
       </div>
     </header>
 
@@ -471,6 +502,7 @@
     const toast = document.getElementById("toast");
     const datePicker = document.getElementById("datePicker");
     const postCountPicker = document.getElementById("postCountPicker");
+    const idxFilter = document.getElementById("idxFilter");
     const linkCount = document.getElementById("linkCount");
     const tabs = document.querySelectorAll(".tab");
     const quickCopyButtons = document.querySelectorAll(".quick-copy-button");
@@ -494,6 +526,7 @@
           links.push({
             title: `Life Hidden Truth ${titleNumber}`,
             url: `${BASE_URL}/life-hidden-truth-${titleNumber}-${getDateForUrl()}-${variant}`,
+            idx: variant,
             prefix: LINK_PREFIXES[Math.floor(Math.random() * LINK_PREFIXES.length)]
           });
         }
@@ -503,7 +536,8 @@
     }
 
     function renderLinks(nick) {
-      const links = createLinks(nick);
+      const selectedIdx = idxFilter.value;
+      const links = createLinks(nick).filter((link) => selectedIdx === "all" || link.idx === Number(selectedIdx));
       listTitle.textContent = `Link của Nick ${nick}`;
       linkCount.textContent = `${links.length} links`;
       linkList.replaceChildren();
@@ -596,9 +630,32 @@
     postCountPicker.addEventListener("change", () => {
       const postCount = Math.max(1, Math.min(20, Number(postCountPicker.value) || 3));
       postCountPicker.value = String(postCount);
+      updateIdxFilter(postCount);
       renderLinks(selectedNick);
     });
 
+    function updateIdxFilter(postCount) {
+      const previousValue = idxFilter.value;
+      idxFilter.replaceChildren();
+
+      const allOption = document.createElement("option");
+      allOption.value = "all";
+      allOption.textContent = "Tất cả idx";
+      idxFilter.appendChild(allOption);
+
+      for (let idx = 1; idx <= postCount; idx += 1) {
+        const option = document.createElement("option");
+        option.value = String(idx);
+        option.textContent = `Idx ${idx}`;
+        idxFilter.appendChild(option);
+      }
+
+      idxFilter.value = Number(previousValue) <= postCount ? previousValue : "all";
+    }
+
+    idxFilter.addEventListener("change", () => renderLinks(selectedNick));
+
+    updateIdxFilter(Number(postCountPicker.value));
     renderLinks(1);
   </script>
 </body>
